@@ -72,30 +72,17 @@ class CUDASetup:
 
             return
 
-        make_cmd = f'CUDA_VERSION={self.cuda_version_string}'
-        if len(self.cuda_version_string) < 3:
-            make_cmd += ' make cuda92'
-        elif self.cuda_version_string == '110':
-            make_cmd += ' make cuda110'
-        elif self.cuda_version_string[:2] == '11' and int(self.cuda_version_string[2]) > 0:
-            make_cmd += ' make cuda11x'
-        elif self.cuda_version_string[:2] == '12' and 1 >= int(self.cuda_version_string[2]) >= 0:
-            make_cmd += ' make cuda12x'
-        elif self.cuda_version_string == '100':
+        if self.cuda_version_string == '100':
             self.add_log_entry('CUDA SETUP: CUDA 10.0 not supported. Please use a different CUDA version.')
             self.add_log_entry('CUDA SETUP: Before you try again running bitsandbytes, make sure old CUDA 10.0 versions are uninstalled and removed from $LD_LIBRARY_PATH variables.')
             return
 
-
-        has_cublaslt = is_cublasLt_compatible(self.cc)
-        if not has_cublaslt:
-            make_cmd += '_nomatmul'
-
         self.add_log_entry('CUDA SETUP: Something unexpected happened. Please compile from source:')
         self.add_log_entry('git clone https://github.com/TimDettmers/bitsandbytes.git')
         self.add_log_entry('cd bitsandbytes')
-        self.add_log_entry(make_cmd)
-        self.add_log_entry('python setup.py install')
+        self.add_log_entry('cmake -DCOMPUTE_BACKEND=cuda -S .')
+        self.add_log_entry('make')
+        self.add_log_entry('pip install .')
 
     def initialize(self):
         if not getattr(self, 'initialized', False):
